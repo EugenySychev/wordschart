@@ -9,12 +9,13 @@
 #include <QList>
 
 #define MAX_COUNT 15
+#define CHUNK_SIZE 4096
 
 class ChartCalculation : public QObject
 {
     Q_OBJECT
 public:
-    ChartCalculation(QString filename, QObject *parent = nullptr);
+    ChartCalculation(QString filename, bool detailing, QObject *parent = nullptr);
 
     void calculate();
 
@@ -32,11 +33,14 @@ signals:
     void finished();
 
 private:
+    void updateTop();
+
     QString mFileName;
     QMap<QString, int> wordsChart;
     std::atomic_bool mIsRunning;
+    int mMinimum;
+    bool mEnabledDetailing;
 
-    void updateTop();
 };
 
 #endif // CHARTCALCULATION_H

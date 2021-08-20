@@ -5,6 +5,8 @@
 #include <QString>
 #include <QMap>
 #include <QVariantList>
+#include <QMutex>
+#include <QTimer>
 #include "chartcalculation.h"
 
 
@@ -18,6 +20,7 @@ public:
     Q_PROPERTY(int maxCount READ getMaxChart NOTIFY chartChanged)
     Q_PROPERTY(QVariantList words READ getWords NOTIFY chartChanged)
     Q_PROPERTY(QVariantList charts READ getChart NOTIFY chartChanged)
+
     /**
      * @brief ChartDrawer constructor
      * @param parent pointer to parent object
@@ -57,11 +60,19 @@ public slots:
      */
     void stopClicked();
 
+    /**
+     * @brief changeDetailing enabling or disabling detailing
+     */
+    void changeDetailing(bool);
+
 private:
     ChartCalculation* calculation;
     QVariantList mWords;
     QVariantList mCharts;
     int mProgress;
+    QMutex mMutex;
+    QTimer mTimer;
+    bool mEnabledDetailing;
 };
 
 #endif // CHARTADAPT_H

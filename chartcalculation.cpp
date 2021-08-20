@@ -1,8 +1,10 @@
 #include "chartcalculation.h"
 #include <QDebug>
-ChartCalculation::ChartCalculation(QString filename, QObject *parent)
+
+ChartCalculation::ChartCalculation(QString filename, bool detailing, QObject *parent)
     : QObject(parent)
     , mFileName{filename}
+    , mEnabledDetailing{detailing}
 {
 }
 
@@ -20,27 +22,42 @@ void ChartCalculation::calculate()
     int filesize = file.size();
     int processedDataSize = 0;
     mIsRunning = true;
-    qDebug() << "Begin to count";
-    while(!file.atEnd() && mIsRunning)
+    mMinimum = 0;
+
+    QByteArray chunk;
+    chunk = file.read(CHUNK_SIZE);
+
+    while (!chunk.isEmpty() && mIsRunning)
     {
         try {
-            QString strData = QString(file.readLine());
+            QTextCodec *codec = QTextCodec::codecForName("UTF-8");
+            QString strData{codec->toUnicode(chunk)};
             auto listData = strData.split(QRegExp("\\W+"), Qt::SkipEmptyParts);
             foreach(const QString &word, listData)
             {
                 wordsChart[word]++;
             }
-            processedDataSize += strData.size();
-            qDebug() << "Processed " << processedDataSize << " from " << filesize;
+            processedDataSize += chunk.size();
 
             emit updateProgress(100 * processedDataSize / filesize);
+
+            if (mEnabledDetailing)
+            {
+                updateTop();
+            }
         }  catch (...) {
             emit updateProgress(-1);
             file.close();
             return;
         }
+        chunk = file.read(CHUNK_SIZE);
+
     }
-    updateTop();
+    if (!mEnabledDetailing)
+    {
+        updateTop();
+    }
+    emit updateProgress(100);
 
 }
 
@@ -50,7 +67,8 @@ void ChartCalculation::updateTop()
     auto keys = wordsChart.keys();
     for(const auto& word : keys)
     {
-        pairList.append(qMakePair(word, wordsChart[word]));
+        if (wordsChart[word] >= mMinimum)
+            pairList.append(qMakePair(word, wordsChart[word]));
     }
 
     std::sort(pairList.begin(), pairList.end(),
@@ -59,11 +77,12 @@ void ChartCalculation::updateTop()
         return a.second > b.second;
     });
 
+
     if (pairList.size() > MAX_COUNT)
     {
         pairList = pairList.mid(0, MAX_COUNT);
     }
-
+    mMinimum = pairList.back().second;
     std::sort(pairList.begin(), pairList.end(),
               [](const QPair<QString, int> &a, const QPair<QString, int> &b)
     {

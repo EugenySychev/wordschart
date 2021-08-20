@@ -7,10 +7,10 @@ import QtQuick.Layouts 1.3
 
 Window {
     width: 640
-    height: 640
-    minimumHeight: 630
+    height: 700
+    minimumHeight: 700
     visible: true
-    title: qsTr("Word chart")
+    title: "Словочарт"
 
     FileDialog {
         id: fileDialog
@@ -23,6 +23,7 @@ Window {
             console.log("Canceled")
         }
     }
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -35,16 +36,39 @@ Window {
             ValueAxis {
                 id: xAxis
                 min: 0
-                max: drawer.maxCount * 1.1;
-                titleText: "Quantity"
+                max: drawer.maxCount;
+                titleText: "Частота"
+                labelsFont: Qt.font({pointSize: 7})
             }
 
             HorizontalBarSeries {
                 id: hBarSeries
                 axisX: xAxis
-                axisY: BarCategoryAxis { categories: drawer.words }
-                BarSet { values: drawer.charts }
+                axisY: BarCategoryAxis {
+                    categories: drawer.words
+                    labelsFont: Qt.font({pointSize: 7})
+                }
+                BarSet {
+                    values: drawer.charts
+                }
             }
+            visible: drawer.progress ? true: false
+        }
+
+        CheckBox {
+            id: detailChecker
+            checked: true
+            Layout.alignment: Qt.AlignHCenter
+            text: "Менять гистограмму в процессе"
+            onCheckStateChanged: {
+                drawer.changeDetailing(detailChecker.checked)
+            }
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            text: "Прогресс " + String(drawer.progress) + "%"
+            visible: drawer.progress ? true: false
         }
 
         ProgressBar {
@@ -54,7 +78,8 @@ Window {
             id: progressBar
             from: 0
             to: 100
-            value: drawer.progress ? 0 : drawer.progress
+            value: drawer.progress ? drawer.progress : 0
+            visible: drawer.progress ? true: false
         }
         RowLayout {
             Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
@@ -62,12 +87,12 @@ Window {
 
             Button {
                 id: openButton
-                text: qsTr("Open")
+                text: "Открыть файл"
                 onClicked: fileDialog.open()
             }
             Button {
                 id: stopButton
-                text: qsTr("Stop")
+                text: "Остановить"
                 onClicked: drawer.stopClicked();
 
             }

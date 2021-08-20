@@ -11,10 +11,8 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
-    QTranslator translator;
-    translator.load("wordchart_ru_RU");
-    app.installTranslator(&translator);
     QQmlApplicationEngine engine;
+
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
