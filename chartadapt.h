@@ -15,7 +15,7 @@ class ChartAdapt : public QObject
 public:
 
     Q_PROPERTY(int progress READ getProgress NOTIFY progressChanged)
-    Q_PROPERTY(int maxCount READ getMaxCount NOTIFY chartChanged)
+    Q_PROPERTY(int maxCount READ getMaxChart NOTIFY chartChanged)
     Q_PROPERTY(QVariantList words READ getWords NOTIFY chartChanged)
     Q_PROPERTY(QVariantList charts READ getChart NOTIFY chartChanged)
     /**
@@ -28,7 +28,7 @@ public:
     int getProgress();
     QVariantList getWords();
     QVariantList getChart();
-    int getMaxCount();
+    int getMaxChart();
 
 signals:
     void progressChanged();

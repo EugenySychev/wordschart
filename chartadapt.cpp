@@ -7,7 +7,11 @@ ChartAdapt::ChartAdapt(QObject* parent)
     : QObject(parent)
     , calculation{nullptr}
 {
-
+    for (int i = 0; i < MAX_COUNT; i++)
+    {
+        mWords.append("");
+        mCharts.append(0);
+    }
 }
 
 void ChartAdapt::openClicked(QString filename)
@@ -40,12 +44,17 @@ void ChartAdapt::updateProgress(int progress)
 
 void ChartAdapt::updateCharts(QList<QPair<QString, int>> list)
 {
-    mWords.clear();
-    mCharts.clear();
+    int i = 0;
     for(const auto& pair : list)
     {
-        mWords.append(pair.first);
-        mCharts.append(pair.second);
+        mWords[i] = pair.first;
+        mCharts[i] = pair.second;
+        i++;
+    }
+    while (i < MAX_COUNT)
+    {
+        mWords[i] = "";
+        mCharts[i] = 0;
     }
 
     qDebug() << "Words " << mWords;
@@ -67,7 +76,7 @@ QVariantList ChartAdapt::getChart()
     return mCharts;
 }
 
-int ChartAdapt::getMaxCount()
+int ChartAdapt::getMaxChart()
 {
     int max = 0;
     for (const QVariant& val : mCharts)
@@ -79,6 +88,7 @@ int ChartAdapt::getMaxCount()
 
 void ChartAdapt::stopClicked()
 {
-    calculation->stopChart();
+    if (calculation)
+        calculation->stopChart();
 }
 

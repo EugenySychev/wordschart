@@ -3,21 +3,14 @@ import QtQuick.Window 2.15
 import QtCharts 2.3
 import QtQuick.Controls 2.15
 import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.3
 
 Window {
     width: 640
-    height: 480
+    height: 640
+    minimumHeight: 630
     visible: true
     title: qsTr("Word chart")
-
-
-    Button {
-        anchors.centerIn: parent
-        text: qsTr("Open")
-        anchors.verticalCenterOffset: (parent.height - height - 20) / 2
-        anchors.horizontalCenterOffset: 0
-        onClicked: fileDialog.open()
-    }
 
     FileDialog {
         id: fileDialog
@@ -25,44 +18,60 @@ Window {
         folder: shortcuts.home
         onAccepted: {
             drawer.openClicked(fileDialog.fileUrl)
-            //            Qt.quit()
         }
         onRejected: {
             console.log("Canceled")
-            //            Qt.quit()
         }
     }
+    ColumnLayout {
+        anchors.fill: parent
 
-    ProgressBar {
-        id: progressBar
+        ChartView {
+            id: hBar
+            legend.visible: false
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
-        x: 225
-        y: 418
-        from: 0
-        to: 100
-        value: drawer.progress ? 0 : drawer.progress
+            ValueAxis {
+                id: xAxis
+                min: 0
+                max: drawer.maxCount * 1.1;
+                titleText: "Quantity"
+            }
 
-    }
-
-    ChartView {
-        id: hBar
-        x: 151
-        y: 31
-        width: parent.width / 2
-        height: parent.width / 2
-        legend.visible: false
-        ValueAxis {
-            id: xAxis
-            min: 0
-            max: drawer.maxCount * 1.1;
-            titleText: "Quantity"
+            HorizontalBarSeries {
+                id: hBarSeries
+                axisX: xAxis
+                axisY: BarCategoryAxis { categories: drawer.words }
+                BarSet { values: drawer.charts }
+            }
         }
 
-        HorizontalBarSeries {
-            id: hBarSeries
-            axisX: xAxis
-            axisY: BarCategoryAxis { categories: drawer.words }
-            BarSet { values: drawer.charts }
+        ProgressBar {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            Layout.margins: 20
+            id: progressBar
+            from: 0
+            to: 100
+            value: drawer.progress ? 0 : drawer.progress
         }
+        RowLayout {
+            Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+            Layout.margins: 20
+
+            Button {
+                id: openButton
+                text: qsTr("Open")
+                onClicked: fileDialog.open()
+            }
+            Button {
+                id: stopButton
+                text: qsTr("Stop")
+                onClicked: drawer.stopClicked();
+
+            }
+        }
+
     }
 }

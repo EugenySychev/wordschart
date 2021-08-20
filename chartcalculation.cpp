@@ -59,9 +59,9 @@ void ChartCalculation::updateTop()
         return a.second > b.second;
     });
 
-    if (pairList.size() > 15)
+    if (pairList.size() > MAX_COUNT)
     {
-        pairList = pairList.mid(0, 15);
+        pairList = pairList.mid(0, MAX_COUNT);
     }
 
     std::sort(pairList.begin(), pairList.end(),

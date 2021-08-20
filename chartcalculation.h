@@ -8,6 +8,8 @@
 #include <QTextCodec>
 #include <QList>
 
+#define MAX_COUNT 15
+
 class ChartCalculation : public QObject
 {
     Q_OBJECT
