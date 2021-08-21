@@ -22,22 +22,32 @@ public:
     Q_PROPERTY(QVariantList charts READ getChart NOTIFY chartChanged)
 
     /**
-     * @brief ChartDrawer constructor
+     * @brief ChartAdapt constructor
      * @param parent pointer to parent object
      */
     ChartAdapt(QObject* parent = nullptr);
 
     // functions for qml interaction
     int getProgress();
+    int getMaxChart();
     QVariantList getWords();
     QVariantList getChart();
-    int getMaxChart();
 
 signals:
+    /**
+     * @brief progressChanged signal of changing progress
+     */
     void progressChanged();
+
+    /**
+     * @brief chartChanged emitting for redraw chart
+     */
     void chartChanged();
+
+    /**
+     * @brief failed of calculation
+     */
     void failed();
-    void finished();
 
 public slots:
     /**
@@ -64,6 +74,11 @@ public slots:
      * @brief changeDetailing enabling or disabling detailing
      */
     void changeDetailing(bool);
+
+    /**
+     * @brief finished calculation
+     */
+    void finished();
 
 private:
     ChartCalculation* calculation;

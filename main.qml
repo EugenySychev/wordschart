@@ -14,13 +14,10 @@ Window {
 
     FileDialog {
         id: fileDialog
-        title: "Please choose a file"
+        title: "Выберите файл"
         folder: shortcuts.home
         onAccepted: {
-            drawer.openClicked(fileDialog.fileUrl)
-        }
-        onRejected: {
-            console.log("Canceled")
+            chartAdapt.openClicked(fileDialog.fileUrl)
         }
     }
 
@@ -36,7 +33,7 @@ Window {
             ValueAxis {
                 id: xAxis
                 min: 0
-                max: drawer.maxCount;
+                max: chartAdapt ? chartAdapt.maxCount : 0
                 titleText: "Частота"
                 labelsFont: Qt.font({pointSize: 7})
             }
@@ -45,14 +42,14 @@ Window {
                 id: hBarSeries
                 axisX: xAxis
                 axisY: BarCategoryAxis {
-                    categories: drawer.words
+                    categories: chartAdapt ? chartAdapt.words : [""]
                     labelsFont: Qt.font({pointSize: 7})
                 }
                 BarSet {
-                    values: drawer.charts
+                    values: chartAdapt ? chartAdapt.charts : [0]
                 }
             }
-            visible: drawer.progress ? true: false
+            visible: chartAdapt ? (chartAdapt.progress ? true: false ) : false
         }
 
         CheckBox {
@@ -61,14 +58,14 @@ Window {
             Layout.alignment: Qt.AlignHCenter
             text: "Менять гистограмму в процессе"
             onCheckStateChanged: {
-                drawer.changeDetailing(detailChecker.checked)
+                chartAdapt.changeDetailing(detailChecker.checked)
             }
         }
 
         Label {
+            id: progressLabel
             Layout.alignment: Qt.AlignHCenter
-            text: "Прогресс " + String(drawer.progress) + "%"
-            visible: drawer.progress ? true: false
+            visible: chartAdapt ? (chartAdapt.progress ? true: false) : false
         }
 
         ProgressBar {
@@ -78,9 +75,10 @@ Window {
             id: progressBar
             from: 0
             to: 100
-            value: drawer.progress ? drawer.progress : 0
-            visible: drawer.progress ? true: false
+            value: chartAdapt ? chartAdapt.progress : 0
+            visible: chartAdapt ? true : false
         }
+
         RowLayout {
             Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
             Layout.margins: 20
@@ -90,13 +88,27 @@ Window {
                 text: "Открыть файл"
                 onClicked: fileDialog.open()
             }
+
             Button {
                 id: stopButton
                 text: "Остановить"
-                onClicked: drawer.stopClicked();
-
+                onClicked: chartAdapt.stopClicked();
             }
         }
+    }
 
+    Connections {
+        target: chartAdapt
+        function onFailed() {
+            progressLabel.text = "Ошибка чтения файла.";
+        }
+        function onProgressChanged() {
+            if (chartAdapt.progress !== 100)
+            {
+                progressLabel.text = "Прогресс " + String(chartAdapt.progress) + "%";
+            } else {
+                progressLabel.text = "Завершено.";
+            }
+        }
     }
 }

@@ -6,10 +6,6 @@
 
 int main(int argc, char *argv[])
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-
     QApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
@@ -20,8 +16,8 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
 
-    ChartAdapt drawer;
-    engine.rootContext()->setContextProperty("drawer", &drawer);
+    ChartAdapt chartAdapt;
+    engine.rootContext()->setContextProperty("chartAdapt", &chartAdapt);
     engine.load(url);
 
     return app.exec();

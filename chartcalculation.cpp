@@ -11,7 +11,10 @@ ChartCalculation::ChartCalculation(QString filename, bool detailing, QObject *pa
 void ChartCalculation::calculate()
 {
     if (mFileName.contains("file://"))
+    {
         mFileName.remove("file://");
+    }
+
     QFile file(mFileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -19,6 +22,7 @@ void ChartCalculation::calculate()
         emit updateProgress(-1);
         return;
     }
+
     int filesize = file.size();
     int processedDataSize = 0;
     mIsRunning = true;
@@ -58,31 +62,39 @@ void ChartCalculation::calculate()
         updateTop();
     }
     emit updateProgress(100);
-
+    emit finished();
 }
 
 void ChartCalculation::updateTop()
 {
     QList<QPair<QString, int>> pairList;
     auto keys = wordsChart.keys();
+
+    // go through words map
     for(const auto& word : keys)
     {
+        // Select only more then previous minimum of top-15 words
         if (wordsChart[word] >= mMinimum)
             pairList.append(qMakePair(word, wordsChart[word]));
     }
 
+    // sorting by quantity
     std::sort(pairList.begin(), pairList.end(),
               [](const QPair<QString, int> &a, const QPair<QString, int> &b)
     {
         return a.second > b.second;
     });
 
-
+    // crop top-15 words
     if (pairList.size() > MAX_COUNT)
     {
         pairList = pairList.mid(0, MAX_COUNT);
     }
+
+    // get minimum of top-15 for next 'counts'
     mMinimum = pairList.back().second;
+
+    // sorting by alphabet
     std::sort(pairList.begin(), pairList.end(),
               [](const QPair<QString, int> &a, const QPair<QString, int> &b)
     {

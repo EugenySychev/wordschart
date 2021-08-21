@@ -29,7 +29,8 @@ void ChartAdapt::openClicked(QString filename)
 
     connect(calculation, &ChartCalculation::updateProgress, this, &ChartAdapt::updateProgress, Qt::DirectConnection);
     connect(calculation, &ChartCalculation::updateResult, this, &ChartAdapt::updateCharts, Qt::DirectConnection);
-    connect(calculation, &ChartCalculation::finished, thread, &QThread::deleteLater);
+    connect(calculation, &ChartCalculation::finished, &mTimer, &QTimer::stop);
+    connect(calculation, &ChartCalculation::finished, this, &ChartAdapt::finished);
 
     thread->start();
     mTimer.start();
@@ -44,6 +45,7 @@ void ChartAdapt::updateProgress(int progress)
         emit failed();
     }
 }
+
 
 void ChartAdapt::updateCharts(QList<QPair<QString, int>> list)
 {
@@ -114,5 +116,12 @@ void ChartAdapt::stopClicked()
 void ChartAdapt::changeDetailing(bool val)
 {
     mEnabledDetailing = val;
+}
+
+void ChartAdapt::finished()
+{
+    mProgress = 100;
+    emit progressChanged();
+    emit chartChanged();
 }
 

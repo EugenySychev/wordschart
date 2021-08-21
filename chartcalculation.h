@@ -15,11 +15,23 @@ class ChartCalculation : public QObject
 {
     Q_OBJECT
 public:
+    /**
+     * @brief ChartCalculation is a calculation class
+     * @param filename is a name of the file which analyzing
+     * @param detailing for build top every chunk of file. If false - result calculated only on finish file reading
+     * @param parent is parent object pointer
+     */
     ChartCalculation(QString filename, bool detailing, QObject *parent = nullptr);
 
+    /**
+     * @brief calculate function for reading file and calculating words chart in file
+     */
     void calculate();
 
 public slots:
+    /**
+     * @brief stopChart is a function for stop reading and calculation
+     */
     void stopChart();
 
 signals:
@@ -29,7 +41,15 @@ signals:
      */
     void updateProgress(int progress);
 
+    /**
+     * @brief updateResult is emitting when some kind of results ready,
+     * @param resultList list of top-15 words
+     */
     void updateResult(QList<QPair<QString, int>> resultList);
+
+    /**
+     * @brief finished of calculation
+     */
     void finished();
 
 private:
