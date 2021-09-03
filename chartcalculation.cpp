@@ -1,4 +1,5 @@
 #include "chartcalculation.h"
+#include <QApplication>
 #include <QDebug>
 
 ChartCalculation::ChartCalculation(QString filename, bool detailing, QObject *parent)
@@ -24,29 +25,27 @@ void ChartCalculation::calculate()
     }
 
     int filesize = file.size();
-    int processedDataSize = 0;
+
     mIsRunning = true;
     mMinimum = 0;
-
-    QByteArray chunk;
-    chunk = file.read(CHUNK_SIZE);
-
-    while (!chunk.isEmpty() && mIsRunning)
+    int processingPerc = 0;
+    int prevPerc = 0;
+    while(!file.atEnd() && mIsRunning)
     {
         try {
-            QTextCodec *codec = QTextCodec::codecForName("UTF-8");
-            QString strData{codec->toUnicode(chunk)};
+            QString strData = QString(file.readLine());
             auto listData = strData.split(QRegExp("\\W+"), Qt::SkipEmptyParts);
             foreach(const QString &word, listData)
             {
                 wordsChart[word]++;
             }
-            processedDataSize += chunk.size();
+            processingPerc = 100 * file.pos() / filesize;
 
-            emit updateProgress(100 * processedDataSize / filesize);
-
-            if (mEnabledDetailing)
+            emit updateProgress(processingPerc);
+            QApplication::processEvents();
+            if (mEnabledDetailing && processingPerc > prevPerc)
             {
+                prevPerc = processingPerc;
                 updateTop();
             }
         }  catch (...) {
@@ -54,8 +53,6 @@ void ChartCalculation::calculate()
             file.close();
             return;
         }
-        chunk = file.read(CHUNK_SIZE);
-
     }
     if (!mEnabledDetailing)
     {
@@ -102,6 +99,7 @@ void ChartCalculation::updateTop()
     });
 
     emit updateResult(pairList);
+    QApplication::processEvents();
 }
 
 void ChartCalculation::stopChart()

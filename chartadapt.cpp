@@ -14,21 +14,20 @@ ChartAdapt::ChartAdapt(QObject* parent)
         mCharts.append(0);
     }
     mTimer.setInterval(100);
-    connect(&mTimer, &QTimer::timeout, this, &ChartAdapt::chartChanged);
-    connect(&mTimer, &QTimer::timeout, this, &ChartAdapt::progressChanged);
 }
 
 void ChartAdapt::openClicked(QString filename)
 {
-    QThread *thread = new QThread();
+    thread = new QThread();
     calculation = new ChartCalculation(filename, mEnabledDetailing);
     calculation->moveToThread(thread);
 
     connect(thread, &QThread::started, calculation, &ChartCalculation::calculate);
-    connect(thread, &QThread::finished, thread, &ChartCalculation::deleteLater);
+    connect(thread, &QThread::finished, calculation, &ChartCalculation::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 
-    connect(calculation, &ChartCalculation::updateProgress, this, &ChartAdapt::updateProgress, Qt::DirectConnection);
-    connect(calculation, &ChartCalculation::updateResult, this, &ChartAdapt::updateCharts, Qt::DirectConnection);
+    connect(calculation, &ChartCalculation::updateProgress, this, &ChartAdapt::updateProgress);
+    connect(calculation, &ChartCalculation::updateResult, this, &ChartAdapt::updateCharts);
     connect(calculation, &ChartCalculation::finished, &mTimer, &QTimer::stop);
     connect(calculation, &ChartCalculation::finished, this, &ChartAdapt::finished);
 
@@ -40,6 +39,7 @@ void ChartAdapt::updateProgress(int progress)
 {
     if (progress >= 0 && progress <= 100) {
         mProgress = progress;
+        emit progressChanged();
     } else {
         qDebug() << "Failed";
         emit failed();
@@ -56,14 +56,13 @@ void ChartAdapt::updateCharts(QList<QPair<QString, int>> list)
         mCharts[i] = pair.second;
         i++;
     }
-    mMutex.lock();
     while (i < MAX_COUNT)
     {
         mWords[i] = "";
         mCharts[i] = 0;
         i++;
     }
-    mMutex.unlock();
+    emit chartChanged();
 }
 
 int ChartAdapt::getProgress()
@@ -73,18 +72,13 @@ int ChartAdapt::getProgress()
 
 QVariantList ChartAdapt::getWords()
 {
-
-    mMutex.lock();
     QVariantList list{mWords};
-    mMutex.unlock();
     return list;
 }
 
 QVariantList ChartAdapt::getChart()
 {
-    mMutex.lock();
     QVariantList list{mCharts};
-    mMutex.unlock();
     return list;
 }
 
@@ -107,9 +101,11 @@ int ChartAdapt::getMaxChart()
 
 void ChartAdapt::stopClicked()
 {
-    if (calculation)
+    qDebug() << "Stopped";
+    if (thread)
     {
         calculation->stopChart();
+        thread->quit();
     }
 }
 
@@ -123,5 +119,9 @@ void ChartAdapt::finished()
     mProgress = 100;
     emit progressChanged();
     emit chartChanged();
+    if (thread)
+    {
+        thread->quit();
+    }
 }
 

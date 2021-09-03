@@ -5,8 +5,8 @@
 #include <QString>
 #include <QMap>
 #include <QVariantList>
-#include <QMutex>
 #include <QTimer>
+#include <QPointer>
 #include "chartcalculation.h"
 
 
@@ -81,13 +81,13 @@ public slots:
     void finished();
 
 private:
-    ChartCalculation* calculation;
+    QPointer<ChartCalculation> calculation;
     QVariantList mWords;
     QVariantList mCharts;
     int mProgress;
-    QMutex mMutex;
     QTimer mTimer;
     bool mEnabledDetailing;
+    QPointer<QThread> thread;
 };
 
 #endif // CHARTADAPT_H

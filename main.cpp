@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
-
+    qRegisterMetaType <QList <QPair <QString, int> > >();
     ChartAdapt chartAdapt;
     engine.rootContext()->setContextProperty("chartAdapt", &chartAdapt);
     engine.load(url);
